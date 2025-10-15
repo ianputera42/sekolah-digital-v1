@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Absensi Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .status-hadir { background-color: #10b981; }
+        .status-izin { background-color: #f59e0b; }
+        .status-sakit { background-color: #3b82f6; }
+        .status-alfa { background-color: #ef4444; }
+        .status-bolos { background-color: #6b7280; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 font-sans">
+    <div class="min-h-full p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Dashboard Absensi Digital</h1>
+                    <p class="text-gray-600 mt-1">Kelola kehadiran siswa dengan mudah dan efisien</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Hari ini</p>
+                    <p class="text-lg font-semibold text-gray-800" id="currentDate"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Pilihan -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Pilih Kelas dan Mata Pelajaran</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
+                    <select id="kelasSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Kelas</option>
+                        <option value="7A">7A</option>
+                        <option value="7B">7B</option>
+                        <option value="8A">8A</option>
+                        <option value="8B">8B</option>
+                        <option value="9A">9A</option>
+                        <option value="9B">9B</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran</label>
+                    <select id="matpelSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Mata Pelajaran</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                        <option value="IPA">IPA</option>
+                        <option value="IPS">IPS</option>
+                        <option value="PKN">PKN</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+                    <input type="date" id="tanggalInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex items-end">
+                    <button id="loadDataBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                        <span id="loadBtnText">Muat Data Siswa</span>
+                        <div id="loadBtnSpinner" class="loading ml-2 hidden"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Koneksi -->
+        <div id="connectionStatus" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded hidden">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm" id="connectionMessage">Menggunakan data offline. Pastikan URL Apps Script sudah dikonfigurasi untuk sinkronisasi online.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daftar Absensi -->
+        <div id="absensiContainer" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Daftar Absensi</h2>
+                <div class="flex gap-2">
+                    <button id="simpanBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
+                        <span id="simpanBtnText">💾 Simpan Data</span>
+                        <div id="simpanBtnSpinner" class="loading ml-2 hidden"></div>
+                    </button>
+                    <button id="downloadExcelBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        📊 Download Excel
+                    </button>
+                    <button id="downloadPdfBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        📄 Download PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">No</th>
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Nama Siswa</th>
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">NIS</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Status Kehadiran</th>
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="siswaTableBody">
+                        <!-- Data siswa akan dimuat di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rekap Absensi -->
+        <div id="rekapContainer" class="bg-white rounded-xl shadow-lg p-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Rekap Absensi</h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                <div class="bg-green-100 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-600" id="countHadir">0</div>
+                    <div class="text-sm text-green-700">Hadir</div>
+                </div>
+                <div class="bg-yellow-100 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-yellow-600" id="countIzin">0</div>
+                    <div class="text-sm text-yellow-700">Izin</div>
+                </div>
+                <div class="bg-blue-100 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="countSakit">0</div>
+                    <div class="text-sm text-blue-700">Sakit</div>
+                </div>
+                <div class="bg-red-100 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-red-600" id="countAlfa">0</div>
+                    <div class="text-sm text-red-700">Alfa</div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-gray-600" id="countBolos">0</div>
+                    <div class="text-sm text-gray-700">Bolos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifikasi -->
+        <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+            <span id="notificationText">Data berhasil disimpan!</span>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // KONFIGURASI APPS SCRIPT WEB APP
+        // ========================================
+        // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA DARI GOOGLE APPS SCRIPT
+        // Cara mendapatkan URL:
+        // 1. Buka Google Apps Script (script.google.com)
+        // 2. Paste kode Apps Script yang sudah diberikan
+        // 3. Klik Deploy > New Deployment
+        // 4. Pilih type: Web app
+        // 5. Execute as: Me
+        // 6. Who has access: Anyone
+        // 7. Copy URL yang dihasilkan dan paste di bawah ini
+        
+        const APPS_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DISINI';
+        <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0a31ca7bafd2a',t:'MTc2MDU0NTE1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
