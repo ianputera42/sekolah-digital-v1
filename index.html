@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///wAAAAA==">
     <style>
         body {
             box-sizing: border-box;
@@ -97,7 +98,7 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm" id="connectionMessage">Menggunakan data offline. Pastikan URL Apps Script sudah dikonfigurasi untuk sinkronisasi online.</p>
+                    <p class="text-sm" id="connectionMessage">Pastikan URL Google Apps Script sudah dikonfigurasi dengan benar.</p>
                 </div>
             </div>
         </div>
@@ -186,4 +187,326 @@
         // 7. Copy URL yang dihasilkan dan paste di bawah ini
         
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuyNsByyzy7QjuG-NHrBdGtb5--IJn8NrkvYVXDoxmcnCSO-NRmQGaNc38XevmET8TQg/exec';
-        <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0a31ca7bafd2a',t:'MTc2MDU0NTE1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+        
+        let currentAbsensiData = [];
+
+        // Set tanggal hari ini
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        document.getElementById('tanggalInput').value = new Date().toISOString().split('T')[0];
+
+        // Event listeners
+        document.getElementById('loadDataBtn').addEventListener('click', loadDataSiswa);
+        document.getElementById('simpanBtn').addEventListener('click', simpanData);
+        document.getElementById('downloadExcelBtn').addEventListener('click', downloadExcel);
+        document.getElementById('downloadPdfBtn').addEventListener('click', downloadPDF);
+
+        async function loadDataSiswa() {
+            const kelas = document.getElementById('kelasSelect').value;
+            const matpel = document.getElementById('matpelSelect').value;
+            const tanggal = document.getElementById('tanggalInput').value;
+
+            if (!kelas || !matpel || !tanggal) {
+                showNotification('Mohon lengkapi semua pilihan!', 'error');
+                return;
+            }
+
+            if (APPS_SCRIPT_URL === 'PASTE_URL_WEB_APP_ANDA_DISINI') {
+                document.getElementById('connectionStatus').classList.remove('hidden');
+                document.getElementById('connectionMessage').textContent = 'URL Google Apps Script belum dikonfigurasi. Silakan ganti APPS_SCRIPT_URL dengan URL Web App Anda.';
+                return;
+            }
+
+            // Show loading
+            const loadBtn = document.getElementById('loadDataBtn');
+            const loadBtnText = document.getElementById('loadBtnText');
+            const loadBtnSpinner = document.getElementById('loadBtnSpinner');
+            
+            loadBtnText.textContent = 'Memuat...';
+            loadBtnSpinner.classList.remove('hidden');
+            loadBtn.disabled = true;
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getDataSiswa',
+                        kelas: kelas
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentAbsensiData = result.data.map((siswa, index) => ({
+                        ...siswa,
+                        status: 'hadir',
+                        keterangan: '',
+                        kelas: kelas,
+                        matpel: matpel,
+                        tanggal: tanggal
+                    }));
+
+                    renderTableAbsensi();
+                    document.getElementById('absensiContainer').classList.remove('hidden');
+                    document.getElementById('rekapContainer').classList.remove('hidden');
+                    document.getElementById('connectionStatus').classList.add('hidden');
+                    updateRekap();
+                    
+                    showNotification(`Data siswa kelas ${kelas} berhasil dimuat!`, 'success');
+                } else {
+                    throw new Error(result.message || 'Gagal mengambil data siswa');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('connectionStatus').classList.remove('hidden');
+                document.getElementById('connectionMessage').textContent = `Error: ${error.message}. Periksa koneksi internet dan URL Apps Script.`;
+                showNotification('Gagal memuat data siswa!', 'error');
+            }
+
+            // Reset loading state
+            loadBtnText.textContent = 'Muat Data Siswa';
+            loadBtnSpinner.classList.add('hidden');
+            loadBtn.disabled = false;
+        }
+
+        function renderTableAbsensi() {
+            const tbody = document.getElementById('siswaTableBody');
+            tbody.innerHTML = '';
+
+            currentAbsensiData.forEach((siswa, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-3">${index + 1}</td>
+                    <td class="border border-gray-300 px-4 py-3 font-medium">${siswa.nama}</td>
+                    <td class="border border-gray-300 px-4 py-3">${siswa.nis}</td>
+                    <td class="border border-gray-300 px-4 py-3">
+                        <div class="flex gap-1 justify-center flex-wrap">
+                            <button onclick="setStatus(${index}, 'hadir')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'hadir' ? 'status-hadir' : 'bg-gray-300'}">Hadir</button>
+                            <button onclick="setStatus(${index}, 'izin')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'izin' ? 'status-izin' : 'bg-gray-300'}">Izin</button>
+                            <button onclick="setStatus(${index}, 'sakit')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'sakit' ? 'status-sakit' : 'bg-gray-300'}">Sakit</button>
+                            <button onclick="setStatus(${index}, 'alfa')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'alfa' ? 'status-alfa' : 'bg-gray-300'}">Alfa</button>
+                            <button onclick="setStatus(${index}, 'bolos')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'bolos' ? 'status-bolos' : 'bg-gray-300'}">Bolos</button>
+                        </div>
+                    </td>
+                    <td class="border border-gray-300 px-4 py-3">
+                        <input type="text" value="${siswa.keterangan}" onchange="setKeterangan(${index}, this.value)" 
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent" 
+                               placeholder="Keterangan tambahan...">
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function setStatus(index, status) {
+            currentAbsensiData[index].status = status;
+            renderTableAbsensi();
+            updateRekap();
+        }
+
+        function setKeterangan(index, keterangan) {
+            currentAbsensiData[index].keterangan = keterangan;
+        }
+
+        function updateRekap() {
+            const counts = {
+                hadir: 0,
+                izin: 0,
+                sakit: 0,
+                alfa: 0,
+                bolos: 0
+            };
+
+            currentAbsensiData.forEach(siswa => {
+                counts[siswa.status]++;
+            });
+
+            document.getElementById('countHadir').textContent = counts.hadir;
+            document.getElementById('countIzin').textContent = counts.izin;
+            document.getElementById('countSakit').textContent = counts.sakit;
+            document.getElementById('countAlfa').textContent = counts.alfa;
+            document.getElementById('countBolos').textContent = counts.bolos;
+        }
+
+        async function simpanData() {
+            if (APPS_SCRIPT_URL === 'PASTE_URL_WEB_APP_ANDA_DISINI') {
+                showNotification('URL Google Apps Script belum dikonfigurasi!', 'error');
+                return;
+            }
+
+            const simpanBtn = document.getElementById('simpanBtn');
+            const simpanBtnText = document.getElementById('simpanBtnText');
+            const simpanBtnSpinner = document.getElementById('simpanBtnSpinner');
+            
+            simpanBtnText.textContent = 'Menyimpan...';
+            simpanBtnSpinner.classList.remove('hidden');
+            simpanBtn.disabled = true;
+
+            const dataToSave = {
+                timestamp: new Date().toISOString(),
+                kelas: document.getElementById('kelasSelect').value,
+                matpel: document.getElementById('matpelSelect').value,
+                tanggal: document.getElementById('tanggalInput').value,
+                absensi: currentAbsensiData
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'simpanAbsensi',
+                        payload: dataToSave
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Data absensi berhasil disimpan ke Google Sheets!', 'success');
+                } else {
+                    throw new Error(result.message || 'Gagal menyimpan data');
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+
+            // Reset loading state
+            simpanBtnText.textContent = '💾 Simpan Data';
+            simpanBtnSpinner.classList.add('hidden');
+            simpanBtn.disabled = false;
+        }
+
+        function downloadExcel() {
+            if (currentAbsensiData.length === 0) {
+                showNotification('Tidak ada data untuk diunduh!', 'error');
+                return;
+            }
+
+            const ws_data = [
+                ['LAPORAN ABSENSI SISWA'],
+                [''],
+                ['Kelas:', document.getElementById('kelasSelect').value],
+                ['Mata Pelajaran:', document.getElementById('matpelSelect').value],
+                ['Tanggal:', new Date(document.getElementById('tanggalInput').value).toLocaleDateString('id-ID')],
+                [''],
+                ['No', 'Nama Siswa', 'NIS', 'Status', 'Keterangan']
+            ];
+
+            currentAbsensiData.forEach((siswa, index) => {
+                ws_data.push([
+                    index + 1,
+                    siswa.nama,
+                    siswa.nis,
+                    siswa.status.toUpperCase(),
+                    siswa.keterangan
+                ]);
+            });
+
+            // Tambahkan rekap
+            ws_data.push(['']);
+            ws_data.push(['REKAP KEHADIRAN']);
+            ws_data.push(['Hadir:', document.getElementById('countHadir').textContent]);
+            ws_data.push(['Izin:', document.getElementById('countIzin').textContent]);
+            ws_data.push(['Sakit:', document.getElementById('countSakit').textContent]);
+            ws_data.push(['Alfa:', document.getElementById('countAlfa').textContent]);
+            ws_data.push(['Bolos:', document.getElementById('countBolos').textContent]);
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Absensi');
+
+            const filename = `Absensi_${document.getElementById('kelasSelect').value}_${document.getElementById('tanggalInput').value}.xlsx`;
+            XLSX.writeFile(wb, filename);
+
+            showNotification('File Excel berhasil diunduh!', 'success');
+        }
+
+        function downloadPDF() {
+            if (currentAbsensiData.length === 0) {
+                showNotification('Tidak ada data untuk diunduh!', 'error');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFontSize(16);
+            doc.text('LAPORAN ABSENSI SISWA', 20, 20);
+            
+            doc.setFontSize(12);
+            doc.text(`Kelas: ${document.getElementById('kelasSelect').value}`, 20, 35);
+            doc.text(`Mata Pelajaran: ${document.getElementById('matpelSelect').value}`, 20, 45);
+            doc.text(`Tanggal: ${new Date(document.getElementById('tanggalInput').value).toLocaleDateString('id-ID')}`, 20, 55);
+
+            // Table header
+            let y = 75;
+            doc.setFontSize(10);
+            doc.text('No', 20, y);
+            doc.text('Nama Siswa', 35, y);
+            doc.text('NIS', 100, y);
+            doc.text('Status', 130, y);
+            doc.text('Keterangan', 160, y);
+
+            // Table data
+            currentAbsensiData.forEach((siswa, index) => {
+                y += 10;
+                doc.text((index + 1).toString(), 20, y);
+                doc.text(siswa.nama, 35, y);
+                doc.text(siswa.nis, 100, y);
+                doc.text(siswa.status.toUpperCase(), 130, y);
+                doc.text(siswa.keterangan || '-', 160, y);
+            });
+
+            // Rekap
+            y += 20;
+            doc.setFontSize(12);
+            doc.text('REKAP KEHADIRAN:', 20, y);
+            doc.setFontSize(10);
+            doc.text(`Hadir: ${document.getElementById('countHadir').textContent}`, 20, y + 15);
+            doc.text(`Izin: ${document.getElementById('countIzin').textContent}`, 20, y + 25);
+            doc.text(`Sakit: ${document.getElementById('countSakit').textContent}`, 20, y + 35);
+            doc.text(`Alfa: ${document.getElementById('countAlfa').textContent}`, 20, y + 45);
+            doc.text(`Bolos: ${document.getElementById('countBolos').textContent}`, 20, y + 55);
+
+            const filename = `Absensi_${document.getElementById('kelasSelect').value}_${document.getElementById('tanggalInput').value}.pdf`;
+            doc.save(filename);
+
+            showNotification('File PDF berhasil diunduh!', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            
+            if (type === 'error') {
+                notification.className = notification.className.replace('bg-green-500', 'bg-red-500');
+            } else {
+                notification.className = notification.className.replace('bg-red-500', 'bg-green-500');
+            }
+            
+            notification.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0c44435199af4',t:'MTc2MDU0NjUxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
