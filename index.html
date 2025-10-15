@@ -385,7 +385,14 @@
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;');
+    
     }
+
+    fetch(scriptURL)
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error("Koneksi gagal:", err));
+
   </script>
 </body>
 </html>
