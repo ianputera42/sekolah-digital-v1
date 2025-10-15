@@ -1,516 +1,391 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Absensi Digital</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///wAAAAA==">
-    <style>
-        body {
-            box-sizing: border-box;
-        }
-        .status-hadir { background-color: #10b981; }
-        .status-izin { background-color: #f59e0b; }
-        .status-sakit { background-color: #3b82f6; }
-        .status-alfa { background-color: #ef4444; }
-        .status-bolos { background-color: #6b7280; }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Absensi Digital SMP — Dashboard</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jsPDF & XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* kecilkan loading circle bila diperlukan */
+    .loading {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #e5e7eb;
+      border-top: 3px solid #0369a1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
-<body class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 font-sans">
-    <div class="min-h-full p-6">
-        <!-- Header -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Dashboard Absensi Digital</h1>
-                    <p class="text-gray-600 mt-1">Kelola kehadiran siswa dengan mudah dan efisien</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-500">Hari ini</p>
-                    <p class="text-lg font-semibold text-gray-800" id="currentDate"></p>
-                </div>
-            </div>
+<body class="bg-slate-50 min-h-screen font-sans">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold text-slate-800">📋 Dashboard Absensi Digital</h1>
+      <p class="text-slate-600 mt-1">Kelola absensi siswa — muat data, catat, simpan ke Google Sheets.</p>
+    </header>
+
+    <!-- Pilihan Kelas / Matpel / Tanggal -->
+    <section class="bg-white p-6 rounded-xl shadow mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Kelas</label>
+          <select id="kelasSelect" class="w-full border rounded px-3 py-2">
+            <option value="">Pilih Kelas</option>
+            <option value="7A">7A</option>
+            <option value="7B">7B</option>
+            <option value="8A">8A</option>
+            <option value="8B">8B</option>
+            <option value="9A">9A</option>
+            <option value="9B">9B</option>
+          </select>
         </div>
 
-        <!-- Form Pilihan -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Pilih Kelas dan Mata Pelajaran</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
-                    <select id="kelasSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Pilih Kelas</option>
-                        <option value="7A">7A</option>
-                        <option value="7B">7B</option>
-                        <option value="8A">8A</option>
-                        <option value="8B">8B</option>
-                        <option value="9A">9A</option>
-                        <option value="9B">9B</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran</label>
-                    <select id="matpelSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Pilih Mata Pelajaran</option>
-                        <option value="Matematika">Matematika</option>
-                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                        <option value="Bahasa Inggris">Bahasa Inggris</option>
-                        <option value="IPA">IPA</option>
-                        <option value="IPS">IPS</option>
-                        <option value="PKN">PKN</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
-                    <input type="date" id="tanggalInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                <div class="flex items-end">
-                    <button id="loadDataBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                        <span id="loadBtnText">Muat Data Siswa</span>
-                        <div id="loadBtnSpinner" class="loading ml-2 hidden"></div>
-                    </button>
-                </div>
-            </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Mata Pelajaran</label>
+          <select id="matpelSelect" class="w-full border rounded px-3 py-2">
+            <option value="">Pilih Mata Pelajaran</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="Bahasa Inggris">Bahasa Inggris</option>
+            <option value="IPA">IPA</option>
+            <option value="IPS">IPS</option>
+            <option value="PKN">PKN</option>
+            <option value="Informatika">Informatika</option>
+          </select>
         </div>
 
-        <!-- Status Koneksi -->
-        <div id="connectionStatus" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded hidden">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm" id="connectionMessage">Pastikan URL Google Apps Script sudah dikonfigurasi dengan benar.</p>
-                </div>
-            </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
+          <input id="tanggalInput" type="date" class="w-full border rounded px-3 py-2" />
         </div>
 
-        <!-- Daftar Absensi -->
-        <div id="absensiContainer" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Daftar Absensi</h2>
-                <div class="flex gap-2">
-                    <button id="simpanBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
-                        <span id="simpanBtnText">💾 Simpan Data</span>
-                        <div id="simpanBtnSpinner" class="loading ml-2 hidden"></div>
-                    </button>
-                    <button id="downloadExcelBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
-                        📊 Download Excel
-                    </button>
-                    <button id="downloadPdfBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
-                        📄 Download PDF
-                    </button>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">No</th>
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Nama Siswa</th>
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">NIS</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Status Kehadiran</th>
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="siswaTableBody">
-                        <!-- Data siswa akan dimuat di sini -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="flex items-end">
+          <button id="loadDataBtn" class="w-full bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700 flex items-center justify-center gap-3">
+            <span id="loadBtnText">Muat Data Siswa</span>
+            <div id="loadSpinner" class="loading hidden" aria-hidden="true"></div>
+          </button>
         </div>
+      </div>
+    </section>
 
-        <!-- Rekap Absensi -->
-        <div id="rekapContainer" class="bg-white rounded-xl shadow-lg p-6 hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Rekap Absensi</h2>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                <div class="bg-green-100 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-green-600" id="countHadir">0</div>
-                    <div class="text-sm text-green-700">Hadir</div>
-                </div>
-                <div class="bg-yellow-100 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-yellow-600" id="countIzin">0</div>
-                    <div class="text-sm text-yellow-700">Izin</div>
-                </div>
-                <div class="bg-blue-100 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-blue-600" id="countSakit">0</div>
-                    <div class="text-sm text-blue-700">Sakit</div>
-                </div>
-                <div class="bg-red-100 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-red-600" id="countAlfa">0</div>
-                    <div class="text-sm text-red-700">Alfa</div>
-                </div>
-                <div class="bg-gray-100 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-gray-600" id="countBolos">0</div>
-                    <div class="text-sm text-gray-700">Bolos</div>
-                </div>
-            </div>
+    <!-- Tempat tabel -->
+    <section id="dataSection" class="hidden bg-white p-6 rounded-xl shadow mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-800">Daftar Siswa</h2>
+        <div class="flex gap-2">
+          <button id="simpanBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
+            <span id="simpanText">💾 Simpan Data</span>
+            <div id="simpanSpinner" class="loading hidden"></div>
+          </button>
+          <button id="downloadExcelBtn" class="bg-amber-500 text-white px-4 py-2 rounded hover:bg-amber-600">📊 Download Excel</button>
+          <button id="downloadPdfBtn" class="bg-rose-600 text-white px-4 py-2 rounded hover:bg-rose-700">📄 Download PDF</button>
         </div>
+      </div>
 
-        <!-- Notifikasi -->
-        <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
-            <span id="notificationText">Data berhasil disimpan!</span>
-        </div>
-    </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border px-3 py-2 text-left">No</th>
+              <th class="border px-3 py-2 text-left">Nama Siswa</th>
+              <th class="border px-3 py-2 text-left">NIS</th>
+              <th class="border px-3 py-2 text-center">Status</th>
+              <th class="border px-3 py-2 text-left">Keterangan</th>
+            </tr>
+          </thead>
+          <tbody id="siswaTableBody"></tbody>
+        </table>
+      </div>
+    </section>
 
-    <script>
-        // ========================================
-        // 🔥 KONFIGURASI APPS SCRIPT WEB APP 🔥
-        // ========================================
-        // ⚠️  PENTING: GANTI URL DI BARIS 95 DENGAN URL WEB APP ANDA! ⚠️
-        // 
-        // Cara mendapatkan URL Apps Script:
-        // 1. Buka Google Apps Script (script.google.com)
-        // 2. Paste kode Apps Script yang sudah diberikan
-        // 3. Klik Deploy > New Deployment
-        // 4. Pilih type: Web app
-        // 5. Execute as: Me
-        // 6. Who has access: Anyone
-        // 7. Copy URL yang dihasilkan (contoh: https://script.google.com/macros/s/AKfycbz.../exec)
-        // 8. Paste URL tersebut di BARIS 95 menggantikan 'PASTE_URL_WEB_APP_ANDA_DISINI'
-        
-        // 👇 URL APPS SCRIPT SUDAH TERKONFIGURASI 👇
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzacQL_1MweXxJIVvHQdk590ZgAIP63lmV6ze8Q1jRR6cuvD3501kGyB1GyQ91sVtxi-A/exec';
-        // ✅ KONEKSI SIAP DIGUNAKAN!
-        
-        let currentAbsensiData = [];
+    <!-- Notifikasi kecil -->
+    <div id="toast" class="fixed right-6 bottom-6 bg-green-600 text-white px-4 py-2 rounded shadow hidden"></div>
+  </div>
 
-        // Set tanggal hari ini
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+  <script>
+    // ======= GANTI DENGAN URL WEB APP KAMU =======
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2PvNNMXejzaegjEamzb7i4dRzOW3Tcqg33c3gqXsB59_GT1Sanrmty4FURNRZgspHtA/exec";
+    // ============================================
+
+    // DOM
+    const kelasSelect = document.getElementById('kelasSelect');
+    const matpelSelect = document.getElementById('matpelSelect');
+    const tanggalInput = document.getElementById('tanggalInput');
+    const loadDataBtn = document.getElementById('loadDataBtn');
+    const loadBtnText = document.getElementById('loadBtnText');
+    const loadSpinner = document.getElementById('loadSpinner');
+
+    const dataSection = document.getElementById('dataSection');
+    const siswaTableBody = document.getElementById('siswaTableBody');
+
+    const simpanBtn = document.getElementById('simpanBtn');
+    const simpanText = document.getElementById('simpanText');
+    const simpanSpinner = document.getElementById('simpanSpinner');
+
+    const downloadExcelBtn = document.getElementById('downloadExcelBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+    const toast = document.getElementById('toast');
+
+    let currentAbsensiData = [];
+
+    // default tanggal hari ini
+    tanggalInput.value = new Date().toISOString().split('T')[0];
+
+    // helper notifikasi
+    function showToast(msg, isError = false) {
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.style.backgroundColor = isError ? '#dc2626' : '#16a34a';
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // Event listeners
+    loadDataBtn.addEventListener('click', loadDataSiswa);
+    simpanBtn.addEventListener('click', simpanData);
+    downloadExcelBtn.addEventListener('click', downloadExcel);
+    downloadPdfBtn.addEventListener('click', downloadPDF);
+
+    async function loadDataSiswa() {
+      const kelas = kelasSelect.value;
+      const matpel = matpelSelect.value;
+      const tanggal = tanggalInput.value;
+
+      if (!kelas || !matpel || !tanggal) {
+        showToast('Lengkapi Kelas, Mata Pelajaran, dan Tanggal.', true);
+        return;
+      }
+
+      // loading UI
+      loadBtnText.textContent = 'Memuat...';
+      loadSpinner.classList.remove('hidden');
+      loadDataBtn.disabled = true;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getDataSiswa', kelas: kelas, matpel: matpel, tanggal: tanggal })
         });
 
-        document.getElementById('tanggalInput').value = new Date().toISOString().split('T')[0];
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const result = await res.json();
 
-        // Event listeners
-        document.getElementById('loadDataBtn').addEventListener('click', loadDataSiswa);
-        document.getElementById('simpanBtn').addEventListener('click', simpanData);
-        document.getElementById('downloadExcelBtn').addEventListener('click', downloadExcel);
-        document.getElementById('downloadPdfBtn').addEventListener('click', downloadPDF);
-
-        async function loadDataSiswa() {
-            const kelas = document.getElementById('kelasSelect').value;
-            const matpel = document.getElementById('matpelSelect').value;
-            const tanggal = document.getElementById('tanggalInput').value;
-
-            if (!kelas || !matpel || !tanggal) {
-                showNotification('Mohon lengkapi semua pilihan!', 'error');
-                return;
-            }
-
-            if (APPS_SCRIPT_URL === 'PASTE_URL_WEB_APP_ANDA_DISINI') {
-                document.getElementById('connectionStatus').classList.remove('hidden');
-                document.getElementById('connectionMessage').textContent = 'URL Google Apps Script belum dikonfigurasi. Silakan ganti APPS_SCRIPT_URL dengan URL Web App Anda.';
-                return;
-            }
-
-            // Show loading
-            const loadBtn = document.getElementById('loadDataBtn');
-            const loadBtnText = document.getElementById('loadBtnText');
-            const loadBtnSpinner = document.getElementById('loadBtnSpinner');
-            
-            loadBtnText.textContent = 'Memuat...';
-            loadBtnSpinner.classList.remove('hidden');
-            loadBtn.disabled = true;
-
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getDataSiswa',
-                        kelas: kelas
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    currentAbsensiData = result.data.map((siswa, index) => ({
-                        ...siswa,
-                        status: 'hadir',
-                        keterangan: '',
-                        kelas: kelas,
-                        matpel: matpel,
-                        tanggal: tanggal
-                    }));
-
-                    renderTableAbsensi();
-                    document.getElementById('absensiContainer').classList.remove('hidden');
-                    document.getElementById('rekapContainer').classList.remove('hidden');
-                    document.getElementById('connectionStatus').classList.add('hidden');
-                    updateRekap();
-                    
-                    showNotification(`Data siswa kelas ${kelas} berhasil dimuat!`, 'success');
-                } else {
-                    throw new Error(result.message || 'Gagal mengambil data siswa');
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('connectionStatus').classList.remove('hidden');
-                document.getElementById('connectionMessage').textContent = `Error: ${error.message}. Periksa koneksi internet dan URL Apps Script.`;
-                showNotification('Gagal memuat data siswa!', 'error');
-            }
-
-            // Reset loading state
-            loadBtnText.textContent = 'Muat Data Siswa';
-            loadBtnSpinner.classList.add('hidden');
-            loadBtn.disabled = false;
+        if (!result.success) {
+          throw new Error(result.message || 'Gagal memuat data siswa');
         }
 
-        function renderTableAbsensi() {
-            const tbody = document.getElementById('siswaTableBody');
-            tbody.innerHTML = '';
+        // format data ke model dengan atribut tambahan
+        currentAbsensiData = result.data.map(s => ({
+          ...s,
+          status: 'Hadir',
+          keterangan: '',
+          kelas: kelas,
+          matpel: matpel,
+          tanggal: tanggal
+        }));
 
-            currentAbsensiData.forEach((siswa, index) => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="border border-gray-300 px-4 py-3">${index + 1}</td>
-                    <td class="border border-gray-300 px-4 py-3 font-medium">${siswa.nama}</td>
-                    <td class="border border-gray-300 px-4 py-3">${siswa.nis}</td>
-                    <td class="border border-gray-300 px-4 py-3">
-                        <div class="flex gap-1 justify-center flex-wrap">
-                            <button onclick="setStatus(${index}, 'hadir')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'hadir' ? 'status-hadir' : 'bg-gray-300'}">Hadir</button>
-                            <button onclick="setStatus(${index}, 'izin')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'izin' ? 'status-izin' : 'bg-gray-300'}">Izin</button>
-                            <button onclick="setStatus(${index}, 'sakit')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'sakit' ? 'status-sakit' : 'bg-gray-300'}">Sakit</button>
-                            <button onclick="setStatus(${index}, 'alfa')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'alfa' ? 'status-alfa' : 'bg-gray-300'}">Alfa</button>
-                            <button onclick="setStatus(${index}, 'bolos')" class="px-3 py-1 rounded-full text-xs font-medium text-white ${siswa.status === 'bolos' ? 'status-bolos' : 'bg-gray-300'}">Bolos</button>
-                        </div>
-                    </td>
-                    <td class="border border-gray-300 px-4 py-3">
-                        <input type="text" value="${siswa.keterangan}" onchange="setKeterangan(${index}, this.value)" 
-                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent" 
-                               placeholder="Keterangan tambahan...">
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+        renderTable();
+        dataSection.classList.remove('hidden');
+        showToast(`Data siswa kelas ${kelas} berhasil dimuat`);
+      } catch (err) {
+        console.error(err);
+        let msg = err.message || 'Terjadi kesalahan koneksi';
+        if (err.message && err.message.includes('Failed to fetch')) {
+          msg = 'Koneksi gagal — periksa URL Web App & pengaturan deploy (Anyone, /exec) atau CORS.';
         }
+        showToast(msg, true);
+      } finally {
+        loadBtnText.textContent = 'Muat Data Siswa';
+        loadSpinner.classList.add('hidden');
+        loadDataBtn.disabled = false;
+      }
+    }
 
-        function setStatus(index, status) {
-            currentAbsensiData[index].status = status;
-            renderTableAbsensi();
-            updateRekap();
+    function renderTable() {
+      siswaTableBody.innerHTML = '';
+      currentAbsensiData.forEach((siswa, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="border px-3 py-2">${idx + 1}</td>
+          <td class="border px-3 py-2 font-medium">${escapeHtml(siswa.nama)}</td>
+          <td class="border px-3 py-2">${escapeHtml(siswa.nis)}</td>
+          <td class="border px-3 py-2 text-center">
+            <select data-idx="${idx}" class="status-select border rounded px-2 py-1">
+              <option value="Hadir">Hadir</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Alfa">Alfa</option>
+              <option value="Bolos">Bolos</option>
+            </select>
+          </td>
+          <td class="border px-3 py-2">
+            <input data-idx="${idx}" class="ket-input w-full border rounded px-2 py-1" type="text" placeholder="Keterangan..."/>
+          </td>
+        `;
+        siswaTableBody.appendChild(tr);
+      });
+
+      // attach event listeners after render
+      document.querySelectorAll('.status-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const i = Number(e.target.dataset.idx);
+          currentAbsensiData[i].status = e.target.value;
+        });
+      });
+      document.querySelectorAll('.ket-input').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const i = Number(e.target.dataset.idx);
+          currentAbsensiData[i].keterangan = e.target.value;
+        });
+      });
+    }
+
+    async function simpanData() {
+      if (currentAbsensiData.length === 0) {
+        showToast('Tidak ada data untuk disimpan.', true);
+        return;
+      }
+
+      // pastikan masih ada info lengkap
+      const kelas = kelasSelect.value;
+      const matpel = matpelSelect.value;
+      const tanggal = tanggalInput.value;
+      if (!kelas || !matpel || !tanggal) {
+        showToast('Lengkapi Kelas, Mata Pelajaran, dan Tanggal sebelum menyimpan.', true);
+        return;
+      }
+
+      simpanText.textContent = 'Menyimpan...';
+      simpanSpinner.classList.remove('hidden');
+      simpanBtn.disabled = true;
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        tanggal: tanggal,
+        kelas: kelas,
+        matpel: matpel,
+        absensi: currentAbsensiData
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'simpanAbsensi', payload })
+        });
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const result = await res.json();
+
+        if (result.success) {
+          showToast('Data absensi berhasil disimpan ke Google Sheets');
+        } else {
+          throw new Error(result.message || 'Gagal menyimpan data');
         }
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Error menyimpan data', true);
+      } finally {
+        simpanText.textContent = '💾 Simpan Data';
+        simpanSpinner.classList.add('hidden');
+        simpanBtn.disabled = false;
+      }
+    }
 
-        function setKeterangan(index, keterangan) {
-            currentAbsensiData[index].keterangan = keterangan;
-        }
+    function downloadExcel() {
+      if (currentAbsensiData.length === 0) {
+        showToast('Tidak ada data untuk diunduh', true);
+        return;
+      }
 
-        function updateRekap() {
-            const counts = {
-                hadir: 0,
-                izin: 0,
-                sakit: 0,
-                alfa: 0,
-                bolos: 0
-            };
+      const ws_data = [
+        ['LAPORAN ABSENSI SISWA'],
+        [],
+        ['Kelas', kelasSelect.value],
+        ['Mata Pelajaran', matpelSelect.value],
+        ['Tanggal', tanggalInput.value],
+        [],
+        ['No', 'Nama Siswa', 'NIS', 'Status', 'Keterangan']
+      ];
 
-            currentAbsensiData.forEach(siswa => {
-                counts[siswa.status]++;
-            });
+      currentAbsensiData.forEach((s, i) => {
+        ws_data.push([i + 1, s.nama, s.nis, s.status, s.keterangan || '']);
+      });
 
-            document.getElementById('countHadir').textContent = counts.hadir;
-            document.getElementById('countIzin').textContent = counts.izin;
-            document.getElementById('countSakit').textContent = counts.sakit;
-            document.getElementById('countAlfa').textContent = counts.alfa;
-            document.getElementById('countBolos').textContent = counts.bolos;
-        }
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      XLSX.utils.book_append_sheet(wb, ws, 'Absensi');
+      const filename = `Absensi_${kelasSelect.value}_${tanggalInput.value}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      showToast('File Excel berhasil diunduh');
+    }
 
-        async function simpanData() {
-            if (APPS_SCRIPT_URL === 'PASTE_URL_WEB_APP_ANDA_DISINI') {
-                showNotification('URL Google Apps Script belum dikonfigurasi!', 'error');
-                return;
-            }
+    function downloadPDF() {
+      if (currentAbsensiData.length === 0) {
+        showToast('Tidak ada data untuk diunduh', true);
+        return;
+      }
 
-            const simpanBtn = document.getElementById('simpanBtn');
-            const simpanBtnText = document.getElementById('simpanBtnText');
-            const simpanBtnSpinner = document.getElementById('simpanBtnSpinner');
-            
-            simpanBtnText.textContent = 'Menyimpan...';
-            simpanBtnSpinner.classList.remove('hidden');
-            simpanBtn.disabled = true;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt' });
+      const marginLeft = 40;
+      let y = 40;
 
-            const dataToSave = {
-                timestamp: new Date().toISOString(),
-                kelas: document.getElementById('kelasSelect').value,
-                matpel: document.getElementById('matpelSelect').value,
-                tanggal: document.getElementById('tanggalInput').value,
-                absensi: currentAbsensiData
-            };
+      doc.setFontSize(14);
+      doc.text('LAPORAN ABSENSI SISWA', marginLeft, y);
+      y += 20;
+      doc.setFontSize(10);
+      doc.text(`Kelas: ${kelasSelect.value}`, marginLeft, y);
+      doc.text(`Mata Pelajaran: ${matpelSelect.value}`, marginLeft + 220, y);
+      doc.text(`Tanggal: ${tanggalInput.value}`, marginLeft + 420, y);
+      y += 30;
 
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'simpanAbsensi',
-                        payload: dataToSave
-                    })
-                });
+      // header
+      doc.setFontSize(10);
+      doc.text('No', marginLeft, y);
+      doc.text('Nama Siswa', marginLeft + 40, y);
+      doc.text('NIS', marginLeft + 260, y);
+      doc.text('Status', marginLeft + 350, y);
+      doc.text('Keterangan', marginLeft + 430, y);
+      y += 12;
 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('Data absensi berhasil disimpan ke Google Sheets!', 'success');
-                } else {
-                    throw new Error(result.message || 'Gagal menyimpan data');
-                }
-            } catch (error) {
-                console.error('Error saving data:', error);
-                showNotification(`Error: ${error.message}`, 'error');
-            }
+      currentAbsensiData.forEach((s, i) => {
+        if (y > 750) { doc.addPage(); y = 40; } // page break
+        y += 18;
+        doc.text(String(i + 1), marginLeft, y);
+        doc.text(s.nama, marginLeft + 40, y);
+        doc.text(s.nis, marginLeft + 260, y);
+        doc.text(s.status, marginLeft + 350, y);
+        doc.text(s.keterangan || '-', marginLeft + 430, y);
+      });
 
-            // Reset loading state
-            simpanBtnText.textContent = '💾 Simpan Data';
-            simpanBtnSpinner.classList.add('hidden');
-            simpanBtn.disabled = false;
-        }
+      const filename = `Absensi_${kelasSelect.value}_${tanggalInput.value}.pdf`;
+      doc.save(filename);
+      showToast('File PDF berhasil diunduh');
+    }
 
-        function downloadExcel() {
-            if (currentAbsensiData.length === 0) {
-                showNotification('Tidak ada data untuk diunduh!', 'error');
-                return;
-            }
-
-            const ws_data = [
-                ['LAPORAN ABSENSI SISWA'],
-                [''],
-                ['Kelas:', document.getElementById('kelasSelect').value],
-                ['Mata Pelajaran:', document.getElementById('matpelSelect').value],
-                ['Tanggal:', new Date(document.getElementById('tanggalInput').value).toLocaleDateString('id-ID')],
-                [''],
-                ['No', 'Nama Siswa', 'NIS', 'Status', 'Keterangan']
-            ];
-
-            currentAbsensiData.forEach((siswa, index) => {
-                ws_data.push([
-                    index + 1,
-                    siswa.nama,
-                    siswa.nis,
-                    siswa.status.toUpperCase(),
-                    siswa.keterangan
-                ]);
-            });
-
-            // Tambahkan rekap
-            ws_data.push(['']);
-            ws_data.push(['REKAP KEHADIRAN']);
-            ws_data.push(['Hadir:', document.getElementById('countHadir').textContent]);
-            ws_data.push(['Izin:', document.getElementById('countIzin').textContent]);
-            ws_data.push(['Sakit:', document.getElementById('countSakit').textContent]);
-            ws_data.push(['Alfa:', document.getElementById('countAlfa').textContent]);
-            ws_data.push(['Bolos:', document.getElementById('countBolos').textContent]);
-
-            const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Absensi');
-
-            const filename = `Absensi_${document.getElementById('kelasSelect').value}_${document.getElementById('tanggalInput').value}.xlsx`;
-            XLSX.writeFile(wb, filename);
-
-            showNotification('File Excel berhasil diunduh!', 'success');
-        }
-
-        function downloadPDF() {
-            if (currentAbsensiData.length === 0) {
-                showNotification('Tidak ada data untuk diunduh!', 'error');
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Header
-            doc.setFontSize(16);
-            doc.text('LAPORAN ABSENSI SISWA', 20, 20);
-            
-            doc.setFontSize(12);
-            doc.text(`Kelas: ${document.getElementById('kelasSelect').value}`, 20, 35);
-            doc.text(`Mata Pelajaran: ${document.getElementById('matpelSelect').value}`, 20, 45);
-            doc.text(`Tanggal: ${new Date(document.getElementById('tanggalInput').value).toLocaleDateString('id-ID')}`, 20, 55);
-
-            // Table header
-            let y = 75;
-            doc.setFontSize(10);
-            doc.text('No', 20, y);
-            doc.text('Nama Siswa', 35, y);
-            doc.text('NIS', 100, y);
-            doc.text('Status', 130, y);
-            doc.text('Keterangan', 160, y);
-
-            // Table data
-            currentAbsensiData.forEach((siswa, index) => {
-                y += 10;
-                doc.text((index + 1).toString(), 20, y);
-                doc.text(siswa.nama, 35, y);
-                doc.text(siswa.nis, 100, y);
-                doc.text(siswa.status.toUpperCase(), 130, y);
-                doc.text(siswa.keterangan || '-', 160, y);
-            });
-
-            // Rekap
-            y += 20;
-            doc.setFontSize(12);
-            doc.text('REKAP KEHADIRAN:', 20, y);
-            doc.setFontSize(10);
-            doc.text(`Hadir: ${document.getElementById('countHadir').textContent}`, 20, y + 15);
-            doc.text(`Izin: ${document.getElementById('countIzin').textContent}`, 20, y + 25);
-            doc.text(`Sakit: ${document.getElementById('countSakit').textContent}`, 20, y + 35);
-            doc.text(`Alfa: ${document.getElementById('countAlfa').textContent}`, 20, y + 45);
-            doc.text(`Bolos: ${document.getElementById('countBolos').textContent}`, 20, y + 55);
-
-            const filename = `Absensi_${document.getElementById('kelasSelect').value}_${document.getElementById('tanggalInput').value}.pdf`;
-            doc.save(filename);
-
-            showNotification('File PDF berhasil diunduh!', 'success');
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            
-            notificationText.textContent = message;
-            
-            if (type === 'error') {
-                notification.className = notification.className.replace('bg-green-500', 'bg-red-500');
-            } else {
-                notification.className = notification.className.replace('bg-red-500', 'bg-green-500');
-            }
-            
-            notification.classList.remove('translate-x-full');
-            
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-            }, 3000);
-        }
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0e333a38b9af4',t:'MTc2MDU0Nzc4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    // small helper untuk mencegah XSS saat menaruh teks ke HTML
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+  </script>
+</body>
 </html>
